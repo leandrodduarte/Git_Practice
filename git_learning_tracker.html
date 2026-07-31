@@ -1,0 +1,240 @@
+<div id="root">
+  <div class="head">
+    <div class="eyebrow">Software engineering mentor · progress log</div>
+    <h1>Git &amp; VS Code mastery tracker</h1>
+    <div class="progress-row">
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="pct" id="pct">0%</div>
+    </div>
+  </div>
+  <div id="phases"></div>
+  <div class="footnote">Checks are saved on this device — reopen this file anytime to pick up where you left off.</div>
+</div>
+
+<style>
+  * { box-sizing: border-box; }
+  #root {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    padding: 28px 22px 40px;
+    max-width: 720px;
+    margin: 0 auto;
+    border-radius: 12px;
+  }
+  .eyebrow {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: #58a6ff;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 18px;
+    color: #f0f6fc;
+  }
+  .progress-row { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .bar { flex: 1; height: 8px; border-radius: 4px; background: #21262d; overflow: hidden; }
+  .fill { height: 100%; width: 0%; background: linear-gradient(90deg,#2ea043,#3fb950); transition: width .4s ease; }
+  .pct { font-family: monospace; font-size: 13px; color: #8b949e; min-width: 36px; text-align: right; }
+
+  .phase { margin-bottom: 22px; border: 1px solid #21262d; border-radius: 10px; background: #161b22; overflow: hidden; }
+  .phase-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; cursor: pointer; user-select: none;
+  }
+  .phase-title { font-size: 14px; font-weight: 600; color: #f0f6fc; }
+  .phase-sub { font-size: 12px; color: #8b949e; margin-top: 2px; }
+  .phase-count { font-family: monospace; font-size: 12px; color: #58a6ff; white-space: nowrap; }
+  .chev { font-size: 11px; color: #6e7681; transition: transform .2s ease; }
+  .phase.open .chev { transform: rotate(90deg); }
+
+  .items { display: none; padding: 4px 16px 14px; }
+  .phase.open .items { display: block; }
+
+  .item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 4px; border-top: 1px solid #21262d;
+  }
+  .item:first-child { border-top: none; }
+  .item input {
+    margin-top: 3px; width: 15px; height: 15px; accent-color: #2ea043; cursor: pointer; flex-shrink: 0;
+  }
+  .item label { font-size: 13.5px; line-height: 1.5; cursor: pointer; }
+  .item.done label { color: #8b949e; text-decoration: line-through; }
+  .item code {
+    font-family: monospace; background: #21262d; padding: 1px 5px; border-radius: 4px; font-size: 12.5px;
+  }
+
+  .footnote { font-size: 11.5px; color: #6e7681; margin-top: 6px; text-align: center; }
+</style>
+
+<script>
+const PHASES = [
+  {
+    id: "p1",
+    title: "Phase 1 — Foundations",
+    sub: "The four-box mental model and your environment",
+    items: [
+      { id: "mentalmodel", text: "Understand the four boxes: working directory → staging → local repo → remote repo", done: true },
+      { id: "terminal", text: "Open a terminal in the right folder (Git Bash or VS Code integrated terminal)", done: true },
+      { id: "trust", text: "Open and trust Git_Practice as a VS Code workspace", done: true },
+      { id: "repoconcept", text: "Explain in your own words what a .git folder actually stores", done: false },
+    ]
+  },
+  {
+    id: "p2",
+    title: "Phase 2 — Essential Git",
+    sub: "The commands you'll type every single day",
+    items: [
+      { id: "init", text: "Run <code>git init</code> and see the hidden .git folder appear", done: false },
+      { id: "addcommit", text: "Practice <code>git add</code> + <code>git commit</code> on 3 separate small changes", done: false },
+      { id: "statuslog", text: "Use <code>git status</code> and <code>git log</code> to read your own history", done: false },
+      { id: "pushpull", text: "Push to a real GitHub repo, then practice <code>fetch</code> vs <code>pull</code>", done: false },
+      { id: "branchswitch", text: "Create a branch, commit on it, switch back and forth with <code>switch</code>/<code>checkout</code>", done: false },
+      { id: "mergestash", text: "Try <code>git merge</code> and <code>git stash</code> at least once each", done: false },
+    ]
+  },
+  {
+    id: "p3",
+    title: "Phase 3 — Professional workflow",
+    sub: "How teams actually collaborate",
+    items: [
+      { id: "featurebranch", text: "Create a feature branch for a small change instead of committing to main", done: false },
+      { id: "firstpr", text: "Open your first Pull Request (practice repo)", done: false },
+      { id: "conflict", text: "Deliberately create and resolve a merge conflict", done: false },
+      { id: "codereview", text: "Read and understand a real code review comment at work", done: false },
+    ]
+  },
+  {
+    id: "p4",
+    title: "Phase 4 — VS Code mastery",
+    sub: "Making the editor work for you, not against you",
+    items: [
+      { id: "signin", text: "Sign in to GitHub inside VS Code", done: true },
+      { id: "sourcecontrol", text: "Stage and commit a change using only the Source Control panel (no terminal)", done: false },
+      { id: "shortcuts", text: "Learn 5 productivity shortcuts you actually use weekly", done: false },
+      { id: "debugpanel", text: "Set a breakpoint and step through code with the debugger", done: false },
+    ]
+  },
+  {
+    id: "p5",
+    title: "Phase 5 — AI-assisted development",
+    sub: "Using Copilot without losing your own judgment",
+    items: [
+      { id: "copilotenabled", text: "Enable GitHub Copilot Chat and confirm it's licensed", done: true },
+      { id: "copilottest", text: "Get a correct, verified answer from Copilot Chat", done: true },
+      { id: "verifyhabit", text: "Practice reading and questioning a Copilot suggestion before accepting it", done: false },
+      { id: "aidebug", text: "Use Copilot to help debug a real error, then explain the fix yourself", done: false },
+    ]
+  },
+  {
+    id: "p6",
+    title: "Phase 6 — Spec-driven development",
+    sub: "Business request → spec → tasks → code → test → ship",
+    items: [
+      { id: "readspec", text: "Read a real specification or ticket at work start to finish, unassisted", done: false },
+      { id: "breaktasks", text: "Break one spec into smaller implementation tasks yourself", done: false },
+      { id: "writespec", text: "Write a short spec or task description for something you plan to build", done: false },
+    ]
+  },
+  {
+    id: "p7",
+    title: "Phase 7 — CI/CD and pipelines",
+    sub: "What happens after you push",
+    items: [
+      { id: "watchpipeline", text: "Watch a real pipeline run at work and identify build vs test vs deploy stages", done: false },
+      { id: "failedpipeline", text: "Read a failed pipeline log and identify what broke", done: false },
+    ]
+  },
+];
+
+const STORAGE_KEY = "progress";
+let state = {};
+
+function computeTotals() {
+  let done = 0, total = 0;
+  PHASES.forEach(p => p.items.forEach(it => {
+    total++;
+    if (state[it.id] === true || (state[it.id] === undefined && it.done)) done++;
+  }));
+  return { done, total };
+}
+
+function render() {
+  const container = document.getElementById("phases");
+  container.innerHTML = "";
+  PHASES.forEach((phase, pIndex) => {
+    const doneCount = phase.items.filter(it => state[it.id] === true || (state[it.id] === undefined && it.done)).length;
+    const phaseDiv = document.createElement("div");
+    phaseDiv.className = "phase" + (pIndex === 0 || pIndex === 1 ? " open" : "");
+
+    const head = document.createElement("div");
+    head.className = "phase-head";
+    head.innerHTML = `
+      <div>
+        <div class="phase-title">${phase.title}</div>
+        <div class="phase-sub">${phase.sub}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="phase-count">${doneCount}/${phase.items.length}</div>
+        <div class="chev">&#9656;</div>
+      </div>`;
+    head.onclick = () => phaseDiv.classList.toggle("open");
+
+    const itemsDiv = document.createElement("div");
+    itemsDiv.className = "items";
+
+    phase.items.forEach(it => {
+      const isDone = state[it.id] === true || (state[it.id] === undefined && it.done);
+      const row = document.createElement("div");
+      row.className = "item" + (isDone ? " done" : "");
+      const cbId = "cb_" + it.id;
+      row.innerHTML = `<input type="checkbox" id="${cbId}" ${isDone ? "checked" : ""}/><label for="${cbId}">${it.text}</label>`;
+      row.querySelector("input").onchange = async (e) => {
+        state[it.id] = e.target.checked;
+        row.classList.toggle("done", e.target.checked);
+        await save();
+        updateProgress();
+        head.querySelector(".phase-count").textContent = `${phase.items.filter(x => state[x.id] === true || (state[x.id] === undefined && x.done)).length}/${phase.items.length}`;
+      };
+      itemsDiv.appendChild(row);
+    });
+
+    phaseDiv.appendChild(head);
+    phaseDiv.appendChild(itemsDiv);
+    container.appendChild(phaseDiv);
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const { done, total } = computeTotals();
+  const pct = Math.round((done / total) * 100);
+  document.getElementById("fill").style.width = pct + "%";
+  document.getElementById("pct").textContent = pct + "%";
+}
+
+async function save() {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+  } catch (err) {
+    console.error("Save failed", err);
+  }
+}
+
+async function load() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) state = JSON.parse(result.value);
+  } catch (err) {
+    state = {};
+  }
+  render();
+}
+
+load();
+</script>
